@@ -24,17 +24,18 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+import static org.z1god.retrofitrecycler.KirimActivity.KEY_IS_UPDATE;
+import static org.z1god.retrofitrecycler.KirimActivity.KEY_MHS_TO_UPDATE;
+
+public class MainActivity extends AppCompatActivity implements MahasiswaAdapter.RecyclerListener {
     private RecyclerView recyclerView;
     private MahasiswaAdapter adapter;
     private TextView tvError;
     private ProgressBar loading;
     private Gson gson;
 
-    public static final int RC_ADD_MAHASISWA = 201;
+    public static final int RC_GOTO_KIRIM = 201;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     tvError.setVisibility(View.INVISIBLE);
 
-                    adapter = new MahasiswaAdapter(response.body());
+                    adapter = new MahasiswaAdapter(response.body(), MainActivity.this);
                     recyclerView.setAdapter(adapter);
                 }else{
                     try {
@@ -119,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     tvError.setVisibility(View.INVISIBLE);
 
-                    adapter = new MahasiswaAdapter(response.body());
+                    adapter = new MahasiswaAdapter(response.body(),MainActivity.this);
                     recyclerView.setAdapter(adapter);
                 }else{
                     try {
@@ -147,16 +148,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addMahasiswa(View view) {
-        startActivityForResult(new Intent(this,KirimActivity.class), RC_ADD_MAHASISWA);
+        startActivityForResult(new Intent(this,KirimActivity.class), RC_GOTO_KIRIM);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
-            if (requestCode == RC_ADD_MAHASISWA){
+            if (requestCode == RC_GOTO_KIRIM){
                 getAllMhs();
             }
         }
+    }
+
+    @Override
+    public void onClick(MahasiswaModel mhs) {
+        Intent intent = new Intent(this, KirimActivity.class);
+        intent.putExtra(KEY_IS_UPDATE,true);
+        intent.putExtra(KEY_MHS_TO_UPDATE,mhs);
+        startActivityForResult(intent, RC_GOTO_KIRIM);
     }
 }

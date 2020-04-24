@@ -1,5 +1,6 @@
 package org.z1god.retrofitrecycler;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,15 +15,18 @@ import java.util.List;
 public class MahasiswaAdapter extends RecyclerView.Adapter<MahasiswaAdapter.MyViewHolder> {
 
     List<MahasiswaModel> mahasiswa;
+    RecyclerListener myListener;
 
-    public MahasiswaAdapter(List<MahasiswaModel> mahasiswa) {
+    public MahasiswaAdapter(List<MahasiswaModel> mahasiswa, RecyclerListener context) {
         this.mahasiswa = mahasiswa;
+        myListener = context;
     }
 
-    public MahasiswaAdapter(MahasiswaModel mhs) {
+    public MahasiswaAdapter(MahasiswaModel mhs, RecyclerListener context) {
         List<MahasiswaModel> mahasiswa = new ArrayList<>();
         mahasiswa.add(mhs);
         this.mahasiswa = mahasiswa;
+        myListener = context;
     }
 
     @NonNull
@@ -41,6 +45,13 @@ public class MahasiswaAdapter extends RecyclerView.Adapter<MahasiswaAdapter.MyVi
         holder.tvGender.setText(mhs.getJenis_kelamin());
         holder.tvAddress.setText(mhs.getAlamat());
         holder.tvNim.setText(mhs.getNim());
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    myListener.onClick(mahasiswa.get(holder.getAdapterPosition()));
+            }
+        });
     }
 
     @Override
@@ -60,5 +71,9 @@ public class MahasiswaAdapter extends RecyclerView.Adapter<MahasiswaAdapter.MyVi
             tvPhone = itemView.findViewById(R.id.tv_hp);
 
         }
+    }
+
+    public interface RecyclerListener{
+        void onClick(MahasiswaModel mhs);
     }
 }

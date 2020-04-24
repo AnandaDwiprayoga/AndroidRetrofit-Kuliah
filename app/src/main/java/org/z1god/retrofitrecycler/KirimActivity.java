@@ -25,6 +25,9 @@ import retrofit2.Response;
 
 public class KirimActivity extends AppCompatActivity {
     Spinner spinner;
+    ArrayAdapter<CharSequence> adapter;
+    public static final String KEY_IS_UPDATE = "KEY_IS_UPDATE";
+    public static final String KEY_MHS_TO_UPDATE = "KEY_MHS_TO_UPDATE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +40,23 @@ public class KirimActivity extends AppCompatActivity {
         EditText etAddress = findViewById(R.id.et_address_add);
         EditText etPhone = findViewById(R.id.et_notelp_add);
         ProgressBar loading = findViewById(R.id.loading_add);
+        spinner = findViewById(R.id.spinner_gender);
 
         setSpinnerGender();
+
+        boolean isEdit = getIntent().getBooleanExtra(KEY_IS_UPDATE,false);
+        if(isEdit){
+            MahasiswaModel mhs = getIntent().getParcelableExtra(KEY_MHS_TO_UPDATE);
+
+            etNim.setText(mhs.getNim());
+            etName.setText(mhs.getNama());
+            etAddress.setText(mhs.getAlamat());
+            etPhone.setText(mhs.getNo_telp());
+            spinner.setSelection(adapter.getPosition(mhs.getJenis_kelamin()));
+
+            etNim.setEnabled(false);
+            btnAddMahasiswa.setText("Update Mahasiswa");
+        }
 
         btnAddMahasiswa.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,40 +70,70 @@ public class KirimActivity extends AppCompatActivity {
                         spinner.getSelectedItem().toString(),
                         etPhone.getText().toString()
                 );
-                Call<MessageModel> request = ApiConfig.getApiService().postMahasiswa(mhs);
-                request.enqueue(new Callback<MessageModel>() {
-                    @Override
-                    public void onResponse(Call<MessageModel> call, Response<MessageModel> response) {
-                        if (response.isSuccessful()){
-                            Toast.makeText(KirimActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
-                            setResult(RESULT_OK);
-                            finish();
-                        }else{
-                           Gson gson = new Gson();
-                            try {
-                                MessageModel errorBody = gson.fromJson(response.errorBody().string(), MessageModel.class);
-                                Toast.makeText(KirimActivity.this, errorBody.getMessage(), Toast.LENGTH_SHORT).show();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        loading.setVisibility(View.INVISIBLE);
-                    }
 
-                    @Override
-                    public void onFailure(Call<MessageModel> call, Throwable t) {
-                        Toast.makeText(KirimActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                        loading.setVisibility(View.INVISIBLE);
-                    }
-                });
+
+                if(isEdit){
+                    Call<MessageModel> request = ApiConfig.getApiService().putMahasiswa(mhs);
+                    request.enqueue(new Callback<MessageModel>() {
+                        @Override
+                        public void onResponse(Call<MessageModel> call, Response<MessageModel> response) {
+                            if (response.isSuccessful()){
+                                Toast.makeText(KirimActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
+                                finish();
+                            }else{
+                                Gson gson = new Gson();
+                                try {
+                                    MessageModel errorBody = gson.fromJson(response.errorBody().string(), MessageModel.class);
+                                    Toast.makeText(KirimActivity.this, errorBody.getMessage(), Toast.LENGTH_SHORT).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            loading.setVisibility(View.INVISIBLE);
+                        }
+
+                        @Override
+                        public void onFailure(Call<MessageModel> call, Throwable t) {
+                            Toast.makeText(KirimActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                            loading.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                }else {
+                    Call<MessageModel> request = ApiConfig.getApiService().postMahasiswa(mhs);
+                    request.enqueue(new Callback<MessageModel>() {
+                        @Override
+                        public void onResponse(Call<MessageModel> call, Response<MessageModel> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(KirimActivity.this, response.body().getMessage(), Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
+                                finish();
+                            } else {
+                                Gson gson = new Gson();
+                                try {
+                                    MessageModel errorBody = gson.fromJson(response.errorBody().string(), MessageModel.class);
+                                    Toast.makeText(KirimActivity.this, errorBody.getMessage(), Toast.LENGTH_SHORT).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            loading.setVisibility(View.INVISIBLE);
+                        }
+
+                        @Override
+                        public void onFailure(Call<MessageModel> call, Throwable t) {
+                            Toast.makeText(KirimActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                            loading.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                }
             }
         });
     }
 
     private void setSpinnerGender() {
-        spinner = findViewById(R.id.spinner_gender);
         // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+        adapter = ArrayAdapter.createFromResource(this,
                 R.array.gender, android.R.layout.simple_spinner_item);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
